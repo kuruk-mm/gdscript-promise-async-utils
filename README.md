@@ -4,6 +4,16 @@ This addons provides helpers for using the Promise class in GDScript to handle a
 
 Every function that must be `await` has a `co` prefix.
 
+Developed and tested with Godot 4.1.3
+
+# Setup
+
+## Just copying Promise.gd
+- Copy [Promise.gd](addons/gdscript-async-utils/Promise.gd) to your project
+
+## Godot Asset Library
+- Soon...
+
 ## Basic Promise Usage
 
 These examples demonstrate different ways to create, resolve, and work with promises.
