@@ -10,13 +10,15 @@ var _data: Variant = null
 
 
 func resolve():
-	if is_resolved(): return
+	if is_resolved():
+		return
 	_resolved = true
 	_on_resolved.emit()
 
 
 func resolve_with_data(data):
-	if is_resolved(): return
+	if is_resolved():
+		return
 	_data = data
 	resolve()
 
@@ -26,12 +28,15 @@ func get_data():
 
 
 func reject(reason: String):
-	if is_resolved(): return
+	if is_resolved():
+		return
 	_data = Promise.Error.create(reason)
 	resolve()
 
+
 func is_rejected() -> bool:
 	return _data is Promise.Error
+
 
 func is_resolved() -> bool:
 	return _resolved
@@ -40,10 +45,11 @@ func is_resolved() -> bool:
 func co_awaiter() -> Variant:
 	if !_resolved:
 		await _on_resolved
-	if _data is Promise: # Chain promises
+	if _data is Promise:  # Chain promises
 		return _data.co_awaiter()
 	else:
 		return _data
+
 
 class Error:
 	var _error_description: String = ""
@@ -55,6 +61,7 @@ class Error:
 
 	func get_error() -> String:
 		return _error_description
+
 
 # Internal helper function
 static func _co_call_and_get_promise(f) -> Promise:
@@ -71,6 +78,7 @@ static func _co_call_and_get_promise(f) -> Promise:
 		printerr("Func is not a callable nor promise")
 		return null
 
+
 class AllAwaiter:
 	var _mask: int
 	var _promise: Promise = Promise.new()
@@ -83,7 +91,7 @@ class AllAwaiter:
 			return
 
 		results.resize(size)
-		results.fill(null) # by default, the return will be null
+		results.fill(null)  # by default, the return will be null
 		assert(size < 64)
 		_mask = (1 << size) - 1
 		for i in size:
@@ -99,7 +107,8 @@ class AllAwaiter:
 
 		if not _mask and not _promise.is_resolved():
 			_promise.resolve_with_data(results)
-			
+
+
 class AnyAwaiter:
 	var _promise: Promise = Promise.new()
 
@@ -119,7 +128,8 @@ class AnyAwaiter:
 		# Promise.co_any ignores promises with errors
 		if !promise.is_rejected() and not _promise.is_resolved():
 			_promise.resolve_with_data(res)
-			
+
+
 class RaceAwaiter:
 	var _promise: Promise = Promise.new()
 
@@ -140,6 +150,7 @@ class RaceAwaiter:
 		if not _promise.is_resolved():
 			_promise.resolve_with_data(res)
 
+
 # `co_all` is a static function that takes an array of functions (`funcs`)
 # and returns an array. It awaits the resolution of all the given functions.
 # Each function in the array is expected to be a coroutine or a function
@@ -147,11 +158,13 @@ class RaceAwaiter:
 static func co_all(funcs: Array) -> Array:
 	return await AllAwaiter.new(funcs)._promise.co_awaiter()
 
+
 # `co_any` is a static function similar to `co_all`, but it resolves as soon as any of the
 # functions in the provided array resolves. It returns the result of the first function
 # that resolves. It ignores the rejections (differently from co_race)
 static func co_any(funcs: Array) -> Variant:
 	return await AnyAwaiter.new(funcs)._promise.co_awaiter()
+
 
 # `co_race` is another static function that takes an array of functions and returns
 # a variant. It behaves like a race condition, returning the result of the function
